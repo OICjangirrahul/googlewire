@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "4000:4000"  # Expose the application's port
+    volumes:
+      - .:/app  # Bind mount your application code
+    depends_on:
+      db:
+        condition: service_healthy  # Wait for db to be healthy
+    networks:
+      - mynetwork
+
+  db:
+    image: mysql:8.1
+    environment:
+      MYSQL_ROOT_PASSWORD: password 
+      MYSQL_DATABASE: first 
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    volumes:
+      - db-vol:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    networks:
+      - mynetwork
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  db-vol:
+
+networks:
+  mynetwork:
